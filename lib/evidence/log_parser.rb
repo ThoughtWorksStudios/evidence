@@ -1,7 +1,7 @@
 module Evidence
   class LogParser
     def self.default_unmatched
-      lambda {|log| puts "Cannot match log: #{log}"}
+      lambda {|log| warn "Cannot match log: #{log}"}
     end
 
     def initialize(pattern, options)

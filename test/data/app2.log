@@ -1,0 +1,3 @@
+Aug  6 15:00:42 cluster-ip-10-197-18-30 god: INFO [2013-08-06 15:00:42,646] [btpool0-15] [com.xxx] [tenant:yyy] #012#012Processing MyController#list (for 67.214.225.82 at 2013-08-06 15:00:42) [GET]
+Aug  6 15:00:42 cluster-ip-10-197-18-30 god: INFO [2013-08-06 15:00:42,646] [btpool0-15] [com.xxx] [tenant:yyy]   Parameters: {"authenticity_token"=>"qozpdb8e+Fn/23Q8iDAFAyRNLu2mWU0tKsJ2JXzkerY=", "controller"=>"cards", "action"=>"list", "project_id"=>"abc"}
+Aug  6 15:00:43 cluster-ip-10-197-18-30 god: INFO [2013-08-06 15:00:43,402] [btpool0-15] [com.xxx] [tenant:yyy] Completed in 755ms (View: 330, DB: 215) | 200 OK [https://abc.god.company.com/projects/abc/cards/list]

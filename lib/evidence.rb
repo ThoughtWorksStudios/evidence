@@ -1,5 +1,6 @@
 require 'evidence/stream'
 require 'evidence/log_parser'
+require 'evidence/rails_action_parser'
 
 module Evidence
   module_function
@@ -17,4 +18,9 @@ module Evidence
   def log_parser(pattern, options={})
     LogParser.new(pattern, options)
   end
+
+  def rails_action_parser(pid, message)
+    RailsActionParser.new(pid, message)
+  end
+
 end
