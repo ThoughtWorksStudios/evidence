@@ -16,6 +16,18 @@ class RailsActionParserTest < Test::Unit::TestCase
     assert log =~ parser.end_action_pattern
   end
 
+  def test_unmatched_processor
+    pid = lambda {|log| log[:pid]}
+    message = lambda {|log| log[:message]}
+    unmatched = []
+    parser = rails_action_parser(pid, message, lambda{|log| unmatched << log})
+    actions = []
+    processor = parser[lambda {|action| actions << action}]
+    processor.call({message: "haha", pid: '1'})
+    assert_equal 1, unmatched.size
+    assert_equal [], actions
+  end
+
   def test_merge_logs_into_actions
     stream = [
       {pid: '1', message: 'Processing MyController#list (for 67.214.225.82 at 2013-08-06 15:00:42) [GET]'},

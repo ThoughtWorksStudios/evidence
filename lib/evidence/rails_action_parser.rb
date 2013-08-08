@@ -1,8 +1,9 @@
 module Evidence
   class RailsActionParser
 
-    def initialize(pid, message)
+    def initialize(pid, message, unmatched)
       @pid, @message = pid, message
+      @unmatched = unmatched
     end
 
     def [](block)
@@ -18,7 +19,7 @@ module Evidence
           if start_action?(@message[log])
             processes[pid] = [log]
           else
-            warn "Unknown start action message log: #{log.inspect}"
+            @unmatched.call(log)
           end
         end
       end

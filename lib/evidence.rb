@@ -15,12 +15,15 @@ module Evidence
     Counter.new
   end
 
-  def log_parser(pattern, options={})
-    LogParser.new(pattern, options)
+  def log_parser(pattern, unmatched=default_unmatched_processor)
+    LogParser.new(pattern, unmatched)
   end
 
-  def rails_action_parser(pid, message)
-    RailsActionParser.new(pid, message)
+  def rails_action_parser(pid, message, unmatched=default_unmatched_processor)
+    RailsActionParser.new(pid, message, unmatched)
   end
 
+  def default_unmatched_processor
+    lambda {|log| }
+  end
 end

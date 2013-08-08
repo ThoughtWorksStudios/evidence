@@ -33,7 +33,7 @@ class LogParserTest < Test::Unit::TestCase
   def test_handles_unmatched_logs
     stream = ['abc', 'Aug  6 15:01:14 cluster-ip-10-197-18-30 helloworld: INFO [2013-08-06 15:01:14,304] [btpool0-17] [com.company.helloworld] [tenant:timeout] #012#012Processing ProgramsController#index (for 83.244.132.215 at 2013-08-06 15:01:14) [GET]', 'eft', 'Aug  6 15:01:14 cluster-ip-10-197-18-30 helloworld: INFO [2013-08-06 15:01:14,304] [btpool0-17] [com.company.helloworld] [tenant:timeout]   Parameters: {"controller"=>"programs", "action"=>"index"}']
     unmatched = []
-    processor = Evidence.log_parser(pattern, unmatched: lambda{|log| unmatched << log})[lambda {|log| @logs << log}]
+    processor = Evidence.log_parser(pattern, lambda{|log| unmatched << log})[lambda {|log| @logs << log}]
     stream.each do |l|
       processor.call(l)
     end
