@@ -1,4 +1,5 @@
 require 'evidence/stream'
+require 'evidence/log_parser'
 
 module Evidence
   module_function
@@ -11,5 +12,9 @@ module Evidence
 
   def counter
     Counter.new
+  end
+
+  def log_parser(pattern, options={})
+    LogParser.new(pattern, options)
   end
 end
