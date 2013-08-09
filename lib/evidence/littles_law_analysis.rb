@@ -2,7 +2,7 @@ require 'time'
 
 module Evidence
   # Little's Law analysis, input stream log should include the following data
-  # {:request => {:timestamp}, :response => {:completed}}
+  # {:request => {:timestamp}, :response => {:completed_time}}
   class LittlesLawAnalysis
     class Result
       def initialize(start, time_window)
@@ -48,7 +48,7 @@ module Evidence
             result = result.next
           end
         end
-        result.add(log[:response][:completed].to_i)
+        result.add(log[:response][:completed_time].to_i)
       end
     end
   end

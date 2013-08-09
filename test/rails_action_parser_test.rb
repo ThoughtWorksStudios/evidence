@@ -48,9 +48,9 @@ class RailsActionParserTest < Test::Unit::TestCase
       method: 'GET'
     }, actions[0][:request])
     assert_equal({
-      completed: '755',
-      view: '330',
-      db: '215',
+      completed_time: '755',
+      view_time: '330',
+      db_time: '215',
       code: '200',
       status: 'OK',
       url: "https://abc.god.company.com/projects/abc/cards/list"
@@ -81,9 +81,9 @@ class RailsActionParserTest < Test::Unit::TestCase
       method: 'GET'
     }, actions[0][:request])
     assert_equal({
-      completed: '701',
-      view: '31',
-      db: '21',
+      completed_time: '701',
+      view_time: '31',
+      db_time: '21',
       code: '200',
       status: 'OK',
       url: "https://abc.god.company.com/projects/abc/cards/list"
@@ -97,9 +97,9 @@ class RailsActionParserTest < Test::Unit::TestCase
       method: 'GET'
     }, actions[1][:request])
     assert_equal({
-      completed: '702',
-      view: '32',
-      db: '22',
+      completed_time: '702',
+      view_time: '32',
+      db_time: '22',
       code: '200',
       status: 'OK',
       url: "https://abc.god.company.com/projects/abc/cards/list"

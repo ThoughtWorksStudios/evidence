@@ -66,9 +66,9 @@ module Evidence
     def end_action_pattern
       /^
         Completed\sin\s
-        (?<completed>\d+)ms\s+
-        \(View\:\s(?<view>\d+)
-        (,\s*DB\:\s(?<db>\d+))?
+        (?<completed_time>\d+)ms\s+
+        \(View\:\s(?<view_time>\d+)
+        (,\s*DB\:\s(?<db_time>\d+))?
         \)\s+\|\s+
         (?<code>\d+)\s+
         (?<status>\w+)\s+
