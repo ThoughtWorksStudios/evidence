@@ -22,6 +22,5 @@ def data_logs_parser
     \[tenant\:(?<tenant>[^\]]*)\]\s+
     (?<message>.*)
   $/x
-  log_parser(pattern)
+  Evidence.log_parser(pattern)
 end
-

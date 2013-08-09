@@ -7,7 +7,9 @@ class StreamTest < Test::Unit::TestCase
   end
 
   def test_counter_is_an_infinite_stream
-    assert_equal [1, 2, 3, 4], Evidence.counter.first(4)
+    counter = Evidence.counter
+    assert_equal [1, 2, 3, 4], counter.first(4)
+    assert_equal 5, counter.first
     assert_equal 10000, Evidence.counter.first(10000).size
   end
 
