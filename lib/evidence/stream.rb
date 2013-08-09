@@ -10,6 +10,10 @@ module Evidence
       MergedStream.new(comparator, self, stream)
     end
 
+    def eos?
+      @upstream.eos?
+    end
+
     def each(&block)
       @upstream.each(&@processor[block])
     end
@@ -19,6 +23,10 @@ module Evidence
     include Enumerable
     def initialize(array)
       @array = array
+    end
+
+    def eos?
+      @array.empty?
     end
 
     def each(&block)
@@ -35,18 +43,28 @@ module Evidence
       @comparator, @streams = comparator, streams
     end
 
+    def eos?
+      @heads && @heads.empty?
+    end
+
     def each(&block)
-      items = @streams.map{|s| {stream: s, next: s.first}}
+      @heads ||= @streams.reject(&:eos?).map{|s| {stream: s, element: s.first}}
       loop do
-        items.sort! do |a, b|
-          if a[:next]
-            b[:next] ? @comparator.call(a[:next], b[:next]) : -1
-          else
-            b[:next] ? -1 : 0
-          end
+        min = @heads.min do |a, b|
+          @comparator.call(a[:element], b[:element])
         end
-        block.call(items[0][:next])
-        items[0][:next] = items[0][:stream].first
+        break if min.nil?
+        block.call(pull_next(min))
+      end
+    end
+
+    def pull_next(head)
+      head[:element].tap do |value|
+        unless head[:stream].eos?
+          head[:element] = head[:stream].first
+        else
+          @heads.delete(head)
+        end
       end
     end
   end
@@ -55,6 +73,10 @@ module Evidence
     include Enumerable
     def initialize
       @count = 0
+    end
+
+    def eos?
+      false
     end
 
     def each(&block)
