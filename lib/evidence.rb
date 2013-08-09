@@ -1,6 +1,7 @@
 require 'evidence/stream'
 require 'evidence/log_parser'
 require 'evidence/rails_action_parser'
+require 'evidence/littles_law_analysis'
 
 module Evidence
   module_function
@@ -21,6 +22,10 @@ module Evidence
 
   def rails_action_parser(pid, message, unmatched=default_unmatched_processor)
     RailsActionParser.new(pid, message, unmatched)
+  end
+
+  def littles_law_analysis(time_window)
+    LittlesLawAnalysis.new(time_window)
   end
 
   def default_unmatched_processor
