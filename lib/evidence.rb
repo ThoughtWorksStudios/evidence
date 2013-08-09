@@ -8,8 +8,9 @@ module Evidence
 
   # A stream is an Enumerable with a processor processing the data comming
   # from upstream and yield to downstream
-  def stream(up_stream, processor)
-    Stream.new(up_stream, processor)
+  def stream(obj, processor=nil)
+    up_stream = obj.is_a?(Array) ? ArrayStream.new(obj) : obj
+    Stream.new(up_stream, processor || lambda {|b| b})
   end
 
   def counter
