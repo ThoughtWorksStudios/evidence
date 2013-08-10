@@ -6,10 +6,6 @@ module Evidence
       @upstream, @processor = upstream, processor
     end
 
-    def eos?
-      @upstream.eos?
-    end
-
     def each(&block)
       @upstream.each(&@processor[block])
     end
@@ -20,10 +16,6 @@ module Evidence
 
     def initialize(file)
       @file = file
-    end
-
-    def eos?
-      @file.eof?
     end
 
     def each(&block)
@@ -38,10 +30,6 @@ module Evidence
       @array = array
     end
 
-    def eos?
-      @array.empty?
-    end
-
     def each(&block)
       while(item = @array.shift) do
         block.call(item)
@@ -53,30 +41,21 @@ module Evidence
     include Enumerable
 
     def initialize(streams, comparator)
-      @streams, @comparator = streams, comparator
-    end
-
-    def eos?
-      @heads && @heads.empty?
+      @comparator = comparator
+      @heads = streams.map{|s| {stream: s}}
     end
 
     def each(&block)
-      @heads ||= @streams.map{|s| {stream: s, element: s.first}}.reject{|head| head[:stream].eos? && head[:element].nil?}
-
       loop do
-        min = @heads.min do |a, b|
+        @heads.each do |head|
+          head[:element] ||= head[:stream].first
+        end
+
+        min = @heads.reject{|h|h[:element].nil?}.min do |a, b|
           @comparator.call(a[:element], b[:element])
         end
-        break if min.nil?
-        block.call(pull_next(min))
-      end
-    end
-
-    def pull_next(head)
-      head[:element].tap do |value|
-        head[:element] = head[:stream].first
-        if head[:stream].eos? && head[:element].nil?
-          @heads.delete(head)
+        if min
+          block.call(min.delete(:element))
         end
       end
     end
@@ -86,10 +65,6 @@ module Evidence
     include Enumerable
     def initialize
       @count = 0
-    end
-
-    def eos?
-      false
     end
 
     def each(&block)
