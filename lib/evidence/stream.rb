@@ -6,10 +6,6 @@ module Evidence
       @upstream, @processor = upstream, processor
     end
 
-    def merge(stream, comparator)
-      MergedStream.new(comparator, self, stream)
-    end
-
     def eos?
       @upstream.eos?
     end
@@ -17,6 +13,23 @@ module Evidence
     def each(&block)
       @upstream.each(&@processor[block])
     end
+  end
+
+  class FileStream
+    include Enumerable
+
+    def initialize(file)
+      @file = file
+    end
+
+    def eos?
+      @file.eof?
+    end
+
+    def each(&block)
+      @file.each(&block)
+    end
+
   end
 
   class ArrayStream
@@ -39,8 +52,8 @@ module Evidence
   class MergedStream
     include Enumerable
 
-    def initialize(comparator, *streams)
-      @comparator, @streams = comparator, streams
+    def initialize(streams, comparator)
+      @streams, @comparator = streams, comparator
     end
 
     def eos?
@@ -48,7 +61,8 @@ module Evidence
     end
 
     def each(&block)
-      @heads ||= @streams.reject(&:eos?).map{|s| {stream: s, element: s.first}}
+      @heads ||= @streams.map{|s| {stream: s, element: s.first}}.reject{|head| head[:stream].eos? && head[:element].nil?}
+
       loop do
         min = @heads.min do |a, b|
           @comparator.call(a[:element], b[:element])
@@ -60,9 +74,8 @@ module Evidence
 
     def pull_next(head)
       head[:element].tap do |value|
-        unless head[:stream].eos?
-          head[:element] = head[:stream].first
-        else
+        head[:element] = head[:stream].first
+        if head[:stream].eos? && head[:element].nil?
           @heads.delete(head)
         end
       end

@@ -9,8 +9,19 @@ module Evidence
   # A stream is an Enumerable with a processor processing the data comming
   # from upstream and yield to downstream
   def stream(obj, processor=nil)
-    up_stream = obj.is_a?(Array) ? ArrayStream.new(obj) : obj
+    up_stream = case obj
+    when Array
+      ArrayStream.new(obj)
+    when File
+      FileStream.new(obj)
+    else
+      obj
+    end
     Stream.new(up_stream, processor || lambda {|b| b})
+  end
+
+  def merge_streams(streams, comparator)
+    MergedStream.new(streams, comparator)
   end
 
   def counter

@@ -11,7 +11,7 @@ module Evidence
     def single_pattern_parser(block)
       lambda do |line|
         if m = @pattern.match(line)
-          block.call(m)
+          block.call(to_hash(m))
         else
           @unmatched.call(line)
         end
