@@ -21,7 +21,12 @@ module Evidence
   end
 
   def merge_streams(streams, comparator)
-    MergedStream.new(streams, comparator)
+    loop do
+      s1 = streams.shift
+      return s1 if streams.empty?
+      s2 = streams.shift
+      streams << MergedStream.new([s1, s2], comparator)
+    end
   end
 
   def counter
