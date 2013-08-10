@@ -4,7 +4,17 @@ class LittlesLawAnalysisTest < Test::Unit::TestCase
   include Evidence
   def test_calculate
     result = stream(data_stream, littles_law_analysis(60)).to_a
-    assert_equal [1 * 2, 1 * (2 + 4)/2, 0.5 * 4], result
+    expected = [
+                [Time.parse('2013-01-01 00:00:00'),
+                 Time.parse('2013-01-01 00:01:00'),
+                 1 * 2],
+                [Time.parse('2013-01-01 00:01:00'),
+                 Time.parse('2013-01-01 00:02:00'),
+                 1 * (2 + 4)/2],
+                [Time.parse('2013-01-01 00:02:00'),
+                 Time.parse('2013-01-01 00:03:00'),
+                 0.5 * 4]]
+    assert_equal expected, result
   end
 
   def data_stream

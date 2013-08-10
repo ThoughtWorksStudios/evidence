@@ -7,12 +7,13 @@ module Evidence
     class Result
       def initialize(start, time_window)
         @start, @time_window = start, time_window
+        @end = @start + @time_window
         @arrival_count = 0
         @response_time = 0
       end
 
       def ended?(timestamp)
-        @start + @time_window <= timestamp
+        @end <= timestamp
       end
 
       def add(millisecond)
@@ -27,7 +28,7 @@ module Evidence
       def value
         avg_sec_arrival_rate = @arrival_count.to_f/@time_window
         avg_sec_response_time = @response_time.to_f/1000/@arrival_count
-        avg_sec_arrival_rate * avg_sec_response_time
+        [@start, @end, avg_sec_arrival_rate * avg_sec_response_time]
       end
     end
 
