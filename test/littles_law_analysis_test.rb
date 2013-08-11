@@ -3,7 +3,7 @@ require "test_helper"
 class LittlesLawAnalysisTest < Test::Unit::TestCase
   include Evidence
   def test_calculate
-    result = stream(data_stream, littles_law_analysis(60)).to_a
+    result = stream(data_stream) | littles_law_analysis(60)
     expected = [
                 [Time.parse('2013-01-01 00:00:00'),
                  Time.parse('2013-01-01 00:01:00'),
@@ -14,7 +14,7 @@ class LittlesLawAnalysisTest < Test::Unit::TestCase
                 [Time.parse('2013-01-01 00:02:00'),
                  Time.parse('2013-01-01 00:03:00'),
                  0.5 * 4]]
-    assert_equal expected, result
+    assert_equal expected, result.to_a
   end
 
   def data_stream

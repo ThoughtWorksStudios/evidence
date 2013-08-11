@@ -5,6 +5,8 @@ module Evidence
     end
   end
 
+  # A stream is an Enumerable with a process processing the data comming
+  # from input stream and output as another stream
   class Stream
     include Enumerable
     include Pipeline
@@ -24,6 +26,7 @@ module Evidence
 
   class FileStream
     include Enumerable
+    include Pipeline
 
     def initialize(file)
       @file = file
@@ -40,6 +43,8 @@ module Evidence
 
   class ArrayStream
     include Enumerable
+    include Pipeline
+
     def initialize(array)
       @array = array
     end

@@ -6,18 +6,16 @@ require 'evidence/littles_law_analysis'
 module Evidence
   module_function
 
-  # A stream is an Enumerable with a process processing the data comming
-  # from upstream and yield to downstream
-  def stream(obj, process=nil)
-    up_stream = case obj
+  # convert Array or File object to a stream
+  def stream(obj)
+    case obj
     when Array
       ArrayStream.new(obj)
     when File
       FileStream.new(obj)
     else
-      obj
+      raise "Unknown how to convert #{obj.class} to a stream"
     end
-    Stream.new(up_stream, process || lambda {|b| b})
   end
 
   def merge_streams(streams, comparator)
