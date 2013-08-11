@@ -33,14 +33,21 @@ module Evidence
     Counter.new
   end
 
+  # Parse log file stream by given pattern
+  #   pattern: ruby regex expression, has named group specified
+  #   output stream: hash object with name and captured string in log
   def log_parser(pattern, unmatched=default_unmatched_processor)
     LogParser.new(pattern, unmatched)
   end
 
+  # Parse out rails actions by given:
+  #   pid: a lambda returns process id used to group logs
+  #   message: a lambda returns rails log string message
   def rails_action_parser(pid, message, unmatched=default_unmatched_processor)
     RailsActionParser.new(pid, message, unmatched)
   end
 
+  # Do the little's law analysis on rails actions stream
   def littles_law_analysis(time_window)
     LittlesLawAnalysis.new(time_window)
   end
