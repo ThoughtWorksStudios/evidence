@@ -45,7 +45,20 @@ module Evidence
     RailsActionParser.new(pid, message, unmatched)
   end
 
-  # Do the little's law analysis on rails actions stream
+  # Rails action request timestamp parser
+  #   log stream | rails_action_parser(pid, message) | response_time_parser
+  def response_time_parser
+    lambda do |output|
+      lambda do |action|
+        action[:request][:timestamp] = Time.strptime(action[:request][:timestamp], "%Y-%m-%d %H:%M:%S")
+        output[action]
+      end
+    end
+  end
+
+  # Do the little's law analysis on rails actions stream with response_time_parser
+  # example:
+  #   log stream | rails_action_parser(pid, message) | response_time_parser | littles_law_analysis(60)
   def littles_law_analysis(time_window)
     LittlesLawAnalysis.new(time_window)
   end
