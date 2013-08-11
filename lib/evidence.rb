@@ -47,10 +47,10 @@ module Evidence
 
   # Rails action request timestamp parser
   #   log stream | rails_action_parser(pid, message) | request_timestamp_parser
-  def request_timestamp_parser
+  def request_timestamp_parser(format="%Y-%m-%d %H:%M:%S")
     lambda do |output|
       lambda do |action|
-        action[:request][:timestamp] = Time.strptime(action[:request][:timestamp], "%Y-%m-%d %H:%M:%S")
+        action[:request][:timestamp] = Time.strptime(action[:request][:timestamp], format)
         output[action]
       end
     end
