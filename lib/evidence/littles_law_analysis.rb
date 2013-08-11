@@ -37,7 +37,7 @@ module Evidence
       @time_window = time_window
     end
 
-    def [](block)
+    def [](output)
       result = nil
       lambda do |log|
         timestamp = Time.parse(log[:request][:timestamp])
@@ -45,7 +45,7 @@ module Evidence
           result = Result.new(timestamp, @time_window)
         else
           if result.ended?(timestamp)
-            block.call(result.value)
+            output.call(result.value)
             result = result.next
           end
         end

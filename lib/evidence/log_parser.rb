@@ -4,14 +4,14 @@ module Evidence
       @pattern, @unmatched = pattern, unmatched
     end
 
-    def [](block)
-      single_pattern_parser(block)
+    def [](output)
+      single_pattern_parser(output)
     end
 
-    def single_pattern_parser(block)
+    def single_pattern_parser(output)
       lambda do |line|
         if m = @pattern.match(line)
-          block.call(to_hash(m))
+          output.call(to_hash(m))
         else
           @unmatched.call(line)
         end

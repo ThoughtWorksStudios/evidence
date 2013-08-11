@@ -34,8 +34,8 @@ class RailsActionParserTest < Test::Unit::TestCase
       {pid: '1', message: 'Completed in 755ms (View: 330, DB: 215) | 200 OK [https://abc.god.company.com/projects/abc/cards/list]'}
     ]
     actions = []
-    block = lambda {|action| actions << action}
-    process = parser[block]
+    output = lambda {|action| actions << action}
+    process = parser[output]
     process.call(stream[0])
     process.call(stream[1])
 
@@ -65,8 +65,8 @@ class RailsActionParserTest < Test::Unit::TestCase
       {pid: '2', message: 'Completed in 702ms (View: 32, DB: 22) | 200 OK [https://abc.god.company.com/projects/abc/cards/list]'}
     ]
     actions = []
-    block = lambda {|action| actions << action}
-    process = parser[block]
+    output = lambda {|action| actions << action}
+    process = parser[output]
     process.call(stream[0])
     process.call(stream[1])
     process.call(stream[2])

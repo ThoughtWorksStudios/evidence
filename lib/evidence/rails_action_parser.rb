@@ -6,14 +6,14 @@ module Evidence
       @unmatched = unmatched
     end
 
-    def [](block)
+    def [](output)
       processes = Hash.new
       lambda do |log|
         pid = @pid[log]
         if processes.has_key?(pid)
           processes[pid] << log
           if end_action?(@message[log])
-            block.call(parse_action_logs(processes.delete(pid)))
+            output.call(parse_action_logs(processes.delete(pid)))
           end
         else
           if start_action?(@message[log])

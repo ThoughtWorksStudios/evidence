@@ -19,8 +19,8 @@ module Evidence
       @upstream.eos?
     end
 
-    def each(&block)
-      @upstream.each(&@process[block])
+    def each(&output)
+      @upstream.each(&@process[output])
     end
   end
 
@@ -36,8 +36,8 @@ module Evidence
       @file.eof?
     end
 
-    def each(&block)
-      @file.each(&block)
+    def each(&output)
+      @file.each(&output)
     end
   end
 
@@ -53,9 +53,9 @@ module Evidence
       @array.empty?
     end
 
-    def each(&block)
+    def each(&output)
       while(item = @array.shift) do
-        block.call(item)
+        output.call(item)
       end
     end
 
@@ -77,11 +77,11 @@ module Evidence
       @heads.empty?
     end
 
-    def each(&block)
+    def each(&output)
       pull_heads
       loop do
         if min = @heads.min{|a, b| @comparator.call(a[:element], b[:element])}
-          block.call(min.delete(:element).tap{ pull_heads })
+          output.call(min.delete(:element).tap{ pull_heads })
         else
           break if @heads.empty?
           pull_heads
@@ -115,9 +115,9 @@ module Evidence
       false
     end
 
-    def each(&block)
+    def each(&output)
       loop do
-        block.call(@count += 1)
+        output.call(@count += 1)
       end
     end
   end

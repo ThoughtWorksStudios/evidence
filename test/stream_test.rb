@@ -109,11 +109,11 @@ class StreamTest < Test::Unit::TestCase
   end
 
   def pick_numbers(numbers)
-    lambda{|block| lambda {|d| block.call(d) if numbers.include?(d)}}
+    lambda{|output| lambda {|d| output.call(d) if numbers.include?(d)}}
   end
 
   def even_number_filter
-    lambda{|block| lambda {|d| block.call(d) if d % 2 == 0}}
+    lambda{|output| lambda {|d| output.call(d) if d % 2 == 0}}
   end
 
 end
