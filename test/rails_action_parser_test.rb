@@ -16,14 +16,14 @@ class RailsActionParserTest < Test::Unit::TestCase
     assert log =~ parser.end_action_pattern
   end
 
-  def test_unmatched_processor
+  def test_unmatched_process
     pid = lambda {|log| log[:pid]}
     message = lambda {|log| log[:message]}
     unmatched = []
     parser = rails_action_parser(pid, message, lambda{|log| unmatched << log})
     actions = []
-    processor = parser[lambda {|action| actions << action}]
-    processor.call({message: "haha", pid: '1'})
+    process = parser[lambda {|action| actions << action}]
+    process.call({message: "haha", pid: '1'})
     assert_equal 1, unmatched.size
     assert_equal [], actions
   end
@@ -35,9 +35,9 @@ class RailsActionParserTest < Test::Unit::TestCase
     ]
     actions = []
     block = lambda {|action| actions << action}
-    processor = parser[block]
-    processor.call(stream[0])
-    processor.call(stream[1])
+    process = parser[block]
+    process.call(stream[0])
+    process.call(stream[1])
 
     assert_equal 1, actions.size
     assert_equal({
@@ -66,11 +66,11 @@ class RailsActionParserTest < Test::Unit::TestCase
     ]
     actions = []
     block = lambda {|action| actions << action}
-    processor = parser[block]
-    processor.call(stream[0])
-    processor.call(stream[1])
-    processor.call(stream[2])
-    processor.call(stream[3])
+    process = parser[block]
+    process.call(stream[0])
+    process.call(stream[1])
+    process.call(stream[2])
+    process.call(stream[3])
 
     assert_equal 2, actions.size
     assert_equal({

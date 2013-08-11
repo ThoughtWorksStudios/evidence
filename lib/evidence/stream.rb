@@ -1,9 +1,16 @@
 module Evidence
+  module Pipeline
+    def |(process)
+      Stream.new(self, process)
+    end
+  end
+
   class Stream
     include Enumerable
+    include Pipeline
 
-    def initialize(upstream, processor)
-      @upstream, @processor = upstream, processor
+    def initialize(upstream, process)
+      @upstream, @process = upstream, process
     end
 
     def eos?
@@ -11,7 +18,7 @@ module Evidence
     end
 
     def each(&block)
-      @upstream.each(&@processor[block])
+      @upstream.each(&@process[block])
     end
   end
 
@@ -54,6 +61,7 @@ module Evidence
 
   class MergedStream
     include Enumerable
+    include Pipeline
 
     def initialize(streams, comparator)
       @comparator = comparator
@@ -92,6 +100,8 @@ module Evidence
 
   class Counter
     include Enumerable
+    include Pipeline
+
     def initialize
       @count = 0
     end

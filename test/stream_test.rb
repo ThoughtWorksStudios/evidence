@@ -58,8 +58,8 @@ class StreamTest < Test::Unit::TestCase
   end
 
   def test_merge_streams_with_a_comparator
-    s1 = Evidence.stream([2, 3, 5], yield_processor)
-    s2 = Evidence.stream([1, 4, 6], yield_processor)
+    s1 = Evidence.stream([2, 3, 5], yield_process)
+    s2 = Evidence.stream([1, 4, 6], yield_process)
     s3 = Evidence.merge_streams([s1, s2], lambda{|i1, i2| i1 <=> i2})
     assert_equal [1, 2, 3, 4], s3.first(4)
     assert !s3.eos?
@@ -68,8 +68,8 @@ class StreamTest < Test::Unit::TestCase
   end
 
   def test_merged_stream_ignores_nil_value
-    s1 = Evidence.stream([2, nil, nil, nil, 3, 5], yield_processor)
-    s2 = Evidence.stream([1, 4, nil, nil, 6], yield_processor)
+    s1 = Evidence.stream([2, nil, nil, nil, 3, 5], yield_process)
+    s2 = Evidence.stream([1, 4, nil, nil, 6], yield_process)
     s3 = Evidence.merge_streams([s1, s2], lambda{|i1, i2| i1 <=> i2})
 
     assert_equal [1, 2, 3, 4], s3.first(4)
@@ -84,11 +84,30 @@ class StreamTest < Test::Unit::TestCase
     assert s.eos?
   end
 
+  def test_stream_pipe
+    stream = Evidence.stream([1, 2, 3, 4]) | even_number_filter
+    assert_equal [2, 4], stream.to_a
+  end
+
+  def test_merged_stream_pipe
+    s1 = Evidence.stream([2, 3, 5], yield_process)
+    s2 = Evidence.stream([1, 4, 6], yield_process)
+    s3 = Evidence.merge_streams([s1, s2], lambda{|i1, i2| i1 <=> i2})
+    s4 = s3 | even_number_filter
+    assert_equal [2, 4, 6], s4.to_a
+  end
+
+  def test_counter_pipe
+    counter = Evidence.counter
+    stream = counter | even_number_filter
+    assert_equal [2, 4], stream.first(2)
+  end
+
   def even_number_filter
     lambda{|block| lambda {|data| block.call(data) if data % 2 == 0}}
   end
 
-  def yield_processor
+  def yield_process
     lambda{|b| lambda {|i| b[i]}}
   end
 
