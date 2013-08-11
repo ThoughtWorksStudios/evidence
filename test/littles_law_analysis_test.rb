@@ -1,19 +1,14 @@
 require "test_helper"
+require 'time'
 
 class LittlesLawAnalysisTest < Test::Unit::TestCase
   include Evidence
   def test_calculate
-    result = stream(data_stream) | littles_law_analysis(60)
-    expected = [
-                [Time.parse('2013-01-01 00:00:00'),
-                 Time.parse('2013-01-01 00:01:00'),
-                 1 * 2],
-                [Time.parse('2013-01-01 00:01:00'),
-                 Time.parse('2013-01-01 00:02:00'),
-                 1 * (2 + 4)/2],
-                [Time.parse('2013-01-01 00:02:00'),
-                 Time.parse('2013-01-01 00:03:00'),
-                 0.5 * 4]]
+    start = Time.parse('2013-01-01 00:00:00')
+    result = stream(data_stream) | slice_stream(lambda {|action| action[:request][:timestamp]}, 60) | littles_law_analysis
+    expected = [[start..(start + 60), 1.0 * 2],
+                [(start + 60)..(start + 120), 1.0 * (2 + 4)/2],
+                [(start + 120)..(start + 180), 0.5 * 4]]
     assert_equal expected, result.to_a
   end
 

@@ -1,7 +1,6 @@
 require 'evidence/stream'
 require 'evidence/log_parser'
 require 'evidence/rails_action_parser'
-require 'evidence/littles_law_analysis'
 
 module Evidence
   module_function
@@ -24,6 +23,25 @@ module Evidence
       return s1 if streams.empty?
       s2 = streams.shift
       streams << MergedStream.new([s1, s2], comparator)
+    end
+  end
+
+  def slice_stream(index, step, start_index=nil)
+    end_index = step.is_a?(Proc) ? step : lambda { |index| index + step }
+    lambda do |output|
+      @cache ||= []
+      start_index ||= @cache.first ? index[@cache.first] : nil
+      lambda do |log|
+        next_index = index[log]
+        start_index = index[log] if start_index.nil?
+        return if start_index > next_index
+        @cache << log
+        if end_index[start_index] <= next_index
+          range = start_index..end_index[start_index]
+          start_index = range.max
+          output.call(range, @cache.shift(@cache.size - 1))
+        end
+      end
     end
   end
 
@@ -57,10 +75,19 @@ module Evidence
   end
 
   # Do the little's law analysis on rails actions stream with request_timestamp_parser
-  # example:
-  #   log stream | rails_action_parser(pid, message) | request_timestamp_parser | littles_law_analysis(60)
-  def littles_law_analysis(time_window)
-    LittlesLawAnalysis.new(time_window)
+  # usage example:
+  #   log stream | rails_action_parser(pid, message) | request_timestamp_parser | slice_stream(lambda {|action| action[:request][:timestamp]}, 60) | littles_law_analysis
+  def littles_law_analysis
+    lambda do |output|
+      lambda do |range, logs|
+        count = logs.size
+        avg_response_time = logs.reduce(0) {|memo, log| memo + log[:response][:completed_time].to_i} / count
+
+        avg_sec_arrival_rate = count.to_f/(range.max - range.min)
+        avg_sec_response_time = avg_response_time.to_f/1000
+        output[range, avg_sec_arrival_rate * avg_sec_response_time]
+      end
+    end
   end
 
   def default_unmatched_process
