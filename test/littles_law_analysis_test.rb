@@ -21,17 +21,17 @@ class LittlesLawAnalysisTest < Test::Unit::TestCase
     data = []
     start = Time.parse('2013-01-01 00:00:00')
     60.times do |i|
-      data << {request: {timestamp: (start + i).to_s}, response: {completed_time: 2000}}
+      data << {request: {timestamp: (start + i)}, response: {completed_time: 2000}}
     end
     start = Time.parse('2013-01-01 00:01:00')
     60.times do |i|
-      data << {request: {timestamp: (start + i).to_s}, response: {completed_time: 2000 + (i / 30) * 2000}}
+      data << {request: {timestamp: (start + i)}, response: {completed_time: 2000 + (i / 30) * 2000}}
     end
     start = Time.parse('2013-01-01 00:02:00')
     30.times do |i|
-      data << {request: {timestamp: (start + i * 2).to_s}, response: {completed_time: 4000}}
+      data << {request: {timestamp: (start + i * 2)}, response: {completed_time: 4000}}
     end
-    data << {request: {timestamp: (start + 61).to_s}, response: {completed_time: 2000}}
+    data << {request: {timestamp: (start + 61)}, response: {completed_time: 2000}}
     data
   end
 end

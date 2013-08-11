@@ -40,7 +40,7 @@ module Evidence
     def [](output)
       result = nil
       lambda do |log|
-        timestamp = Time.parse(log[:request][:timestamp])
+        timestamp = log[:request][:timestamp]
         if result.nil?
           result = Result.new(timestamp, @time_window)
         else
