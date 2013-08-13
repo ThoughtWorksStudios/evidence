@@ -5,10 +5,6 @@ module Evidence
     end
 
     def [](output)
-      single_pattern_parser(output)
-    end
-
-    def single_pattern_parser(output)
       lambda do |line|
         if m = @pattern.match(line)
           output.call(to_hash(m))
