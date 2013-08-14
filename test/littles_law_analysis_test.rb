@@ -6,9 +6,9 @@ class LittlesLawAnalysisTest < Test::Unit::TestCase
   def test_calculate
     start = Time.parse('2013-01-01 00:00:00')
     result = stream(data_stream) | slice_stream(lambda {|action| action[:request][:timestamp]}, 60) | littles_law_analysis
-    expected = [[start..(start + 60), 1.0 * 2],
-                [(start + 60)..(start + 120), 1.0 * (2 + 4)/2],
-                [(start + 120)..(start + 180), 0.5 * 4]]
+    expected = [{range: start..(start + 60), value: 1.0 * 2},
+                {range: (start + 60)..(start + 120), value: 1.0 * (2 + 4)/2},
+                {range: (start + 120)..(start + 180), value: 0.5 * 4}]
     assert_equal expected, result.to_a
   end
 

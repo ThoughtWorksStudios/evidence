@@ -32,15 +32,15 @@ module Evidence
   #   log stream | rails_action_parser(pid, message) | request_timestamp_parser | slice_stream(lambda {|action| action[:request][:timestamp]}, 60) | littles_law_analysis
   def littles_law_analysis
     lambda do |output|
-      lambda do |range, actions|
-        statistics = actions.inject(sum: 0, count: 0) do |memo, action|
+      lambda do |actions|
+        statistics = actions[:stream].inject(sum: 0, count: 0) do |memo, action|
           memo[:count] += 1
           memo[:sum] += action[:response][:completed_time].to_i
           memo
         end
-        avg_sec_arrival_rate = statistics[:count].to_f/(range.max - range.min)
+        avg_sec_arrival_rate = statistics[:count].to_f/(actions[:range].max - actions[:range].min)
         avg_sec_response_time = statistics[:sum].to_f / statistics[:count] /1000
-        output[range, avg_sec_arrival_rate * avg_sec_response_time]
+        output[range: actions[:range], value: avg_sec_arrival_rate * avg_sec_response_time]
       end
     end
   end

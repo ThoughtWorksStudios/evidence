@@ -134,7 +134,7 @@ module Evidence
           end
         end
         @slice_start_index, @slice_end_index = range.max, @end_index[range.max]
-        output[range, EnumStream.new(slice_enum)]
+        output[range: range, stream: EnumStream.new(slice_enum)]
       end
     end
   end
