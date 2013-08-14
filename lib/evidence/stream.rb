@@ -168,6 +168,24 @@ module Evidence
     SliceStream.new(index, start_index, end_index)
   end
 
+  def stream_each(&block)
+    lambda do |output|
+      lambda do |i|
+        block[i]
+        output[i]
+      end
+    end
+  end
+
+  def stream_map(&block)
+    lambda { |output| lambda { |i| output[block[i]] } }
+  end
+
+  def stream_filter(&block)
+    lambda { |output| lambda { |i| output[i] if block[i] } }
+  end
+  alias :stream_select :stream_filter
+
   def counter
     count = 0
     counter = Enumerator.new { |y| loop { y << (count += 1) } }
