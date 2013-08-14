@@ -28,44 +28,6 @@ module Evidence
     end
   end
 
-  class FileStream
-    include Stream
-
-    def initialize(file)
-      @file = file
-    end
-
-    def eos?
-      @file.eof?
-    end
-
-    def each(&output)
-      @file.each(&output)
-    end
-  end
-
-  class ArrayStream
-    include Stream
-
-    def initialize(array)
-      @array = array
-    end
-
-    def eos?
-      @array.empty?
-    end
-
-    def each(&output)
-      while(item = @array.shift) do
-        output.call(item)
-      end
-    end
-
-    def to_s
-      "$[#{@array.inspect}]"
-    end
-  end
-
   class EnumStream
     include Stream
 
@@ -81,7 +43,10 @@ module Evidence
     end
 
     def each(&output)
-      @enum.each(&output)
+      loop do
+        output[@enum.next]
+      end
+    rescue StopIteration
     end
 
     def to_s
@@ -188,16 +153,7 @@ module Evidence
 
   module_function
   def stream(obj)
-    case obj
-    when Array
-      ArrayStream.new(obj)
-    when File
-      FileStream.new(obj)
-    when Enumerator
-      EnumStream.new(obj)
-    else
-      raise "Unknown how to convert #{obj.class} to a stream"
-    end
+    EnumStream.new(obj.to_enum)
   end
 
   def merge_streams(streams, comparator)
