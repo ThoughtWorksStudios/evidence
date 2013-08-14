@@ -87,6 +87,16 @@ class SliceStreamTest < Test::Unit::TestCase
     assert stream.eos?
   end
 
+  def test_prev_slice_stream_should_be_empty_if_we_jump_to_process_next_slice_stream
+    start = Time.parse('2013-01-01 00:00:00')
+    data = requests(start, 4)
+    stream = stream(data) | slice_stream(lambda {|action| action[:request][:timestamp]}, 2)
+    range1, slice1 = stream.first
+    range2, slice2 = stream.first
+    assert_equal 0, slice1.count
+    assert_equal 2, slice2.count
+  end
+
   def requests(start, seconds)
     data = []
     seconds.times do |i|
