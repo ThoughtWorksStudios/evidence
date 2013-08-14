@@ -186,21 +186,38 @@ module Evidence
     end
   end
 
-  class Counter
-    include Stream
-
-    def initialize
-      @count = 0
-    end
-
-    def eos?
-      false
-    end
-
-    def each(&output)
-      loop do
-        output.call(@count += 1)
-      end
+  module_function
+  def stream(obj)
+    case obj
+    when Array
+      ArrayStream.new(obj)
+    when File
+      FileStream.new(obj)
+    when Enumerator
+      EnumStream.new(obj)
+    else
+      raise "Unknown how to convert #{obj.class} to a stream"
     end
   end
+
+  def merge_streams(streams, comparator)
+    loop do
+      s1 = streams.shift
+      return s1 if streams.empty?
+      s2 = streams.shift
+      streams << MergedStream.new([s1, s2], comparator)
+    end
+  end
+
+  def slice_stream(index, step, start_index=nil)
+    end_index = step.is_a?(Proc) ? step : lambda { |index| index + step }
+    SliceStream.new(index, start_index, end_index)
+  end
+
+  def counter
+    count = 0
+    counter = Enumerator.new { |y| loop { y << (count += 1) } }
+    stream(counter)
+  end
+
 end

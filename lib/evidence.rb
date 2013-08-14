@@ -5,38 +5,6 @@ require 'evidence/rails_action_parser'
 module Evidence
   module_function
 
-  # convert Array or File object to a stream
-  def stream(obj)
-    case obj
-    when Array
-      ArrayStream.new(obj)
-    when File
-      FileStream.new(obj)
-    when Enumerator
-      EnumStream.new(obj)
-    else
-      raise "Unknown how to convert #{obj.class} to a stream"
-    end
-  end
-
-  def merge_streams(streams, comparator)
-    loop do
-      s1 = streams.shift
-      return s1 if streams.empty?
-      s2 = streams.shift
-      streams << MergedStream.new([s1, s2], comparator)
-    end
-  end
-
-  def slice_stream(index, step, start_index=nil)
-    end_index = step.is_a?(Proc) ? step : lambda { |index| index + step }
-    SliceStream.new(index, start_index, end_index)
-  end
-
-  def counter
-    Counter.new
-  end
-
   # Parse log file stream by given pattern
   #   pattern: ruby regex expression, has named group specified
   #   output stream: hash object with name and captured string in log
