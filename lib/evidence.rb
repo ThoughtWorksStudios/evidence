@@ -7,7 +7,7 @@ module Evidence
 
   # Parse log file stream by given pattern
   #   pattern: ruby regex expression, has named group specified
-  #   output stream: hash object with name and captured string in log
+  #   unmatched processor: process all unmatched log
   def log_parser(pattern, unmatched=default_unmatched_process)
     LogParser.new(pattern, unmatched)
   end
@@ -22,11 +22,8 @@ module Evidence
   # Rails action request timestamp parser
   #   log stream | rails_action_parser(pid, message) | request_timestamp_parser
   def request_timestamp_parser(format="%Y-%m-%d %H:%M:%S")
-    lambda do |output|
-      lambda do |action|
-        action[:request][:timestamp] = Time.strptime(action[:request][:timestamp], format)
-        output[action]
-      end
+    stream_each do |action|
+      action[:request][:timestamp] = Time.strptime(action[:request][:timestamp], format)
     end
   end
 
@@ -35,13 +32,14 @@ module Evidence
   #   log stream | rails_action_parser(pid, message) | request_timestamp_parser | slice_stream(lambda {|action| action[:request][:timestamp]}, 60) | littles_law_analysis
   def littles_law_analysis
     lambda do |output|
-      lambda do |range, logs|
-        logs = logs.to_a
-        count = logs.size
-        avg_response_time = logs.reduce(0) {|memo, log| memo + log[:response][:completed_time].to_i} / count
-
-        avg_sec_arrival_rate = count.to_f/(range.max - range.min)
-        avg_sec_response_time = avg_response_time.to_f/1000
+      lambda do |range, actions|
+        statistics = actions.inject(sum: 0, count: 0) do |memo, action|
+          memo[:count] += 1
+          memo[:sum] += action[:response][:completed_time].to_i
+          memo
+        end
+        avg_sec_arrival_rate = statistics[:count].to_f/(range.max - range.min)
+        avg_sec_response_time = statistics[:sum].to_f / statistics[:count] /1000
         output[range, avg_sec_arrival_rate * avg_sec_response_time]
       end
     end
