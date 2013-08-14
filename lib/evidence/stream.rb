@@ -128,10 +128,9 @@ module Evidence
             if @eos_in_slice = eos?
               y << @head
               break
-            else
-              head, @head = @head, @stream.first
-              y << head
             end
+            head, @head = @head, @stream.first
+            y << head
           end
         end
         @slice_start_index, @slice_end_index = range.max, @end_index[range.max]
