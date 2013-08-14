@@ -109,34 +109,34 @@ module Evidence
       @head ||= @stream.first
       @slice_start_index ||= @start_index || @index[@head]
       @slice_end_index ||= @end_index[@slice_start_index]
-      eos_in_slice = false
+      @slice_enumerator ||= nil
+      @eos_in_slice ||= false
       loop do
-        break if eos_in_slice
-
+        @slice_enumerator.each{|_|} if @slice_enumerator
+        break if @eos_in_slice
         range = @slice_start_index..@slice_end_index
-        e = Enumerator.new do |y|
+        @slice_enumerator = Enumerator.new do |y|
           loop do
             head_index = @index[@head]
             if range.min > head_index
-              break if eos_in_slice = eos?
+              break if @eos_in_slice = eos?
               @head = @stream.first
               next
             end
             break if range.max <= head_index
 
-            n = @head
-            if eos_in_slice = eos?
-              y << n
+            if @eos_in_slice = eos?
+              y << @head
               break
             else
-              @head = @stream.first
-              y << n
+              head, @head = @head, @stream.first
+              y << head
             end
           end
         end
         @slice_start_index = range.max
         @slice_end_index = @end_index[@slice_start_index]
-        output[range, EnumStream.new(e)]
+        output[range, EnumStream.new(@slice_enumerator)]
       end
     end
   end

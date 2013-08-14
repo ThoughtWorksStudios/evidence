@@ -77,6 +77,16 @@ class SliceStreamTest < Test::Unit::TestCase
     assert_equal 2, slice2.to_a.size
   end
 
+  def test_should_not_over_slice_the_stream
+    start = Time.parse('2013-01-01 00:00:00')
+    data = requests(start, 4)
+    stream = stream(data) | slice_stream(lambda {|action| action[:request][:timestamp]}, 2)
+    assert stream.first
+    assert stream.first
+    assert_nil stream.first
+    assert stream.eos?
+  end
+
   def requests(start, seconds)
     data = []
     seconds.times do |i|
