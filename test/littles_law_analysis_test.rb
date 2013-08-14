@@ -26,7 +26,6 @@ class LittlesLawAnalysisTest < Test::Unit::TestCase
     30.times do |i|
       data << {request: {timestamp: (start + i * 2)}, response: {completed_time: 4000}}
     end
-    data << {request: {timestamp: (start + 61)}, response: {completed_time: 2000}}
     data
   end
 end

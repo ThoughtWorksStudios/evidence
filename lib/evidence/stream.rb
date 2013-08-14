@@ -1,15 +1,19 @@
 module Evidence
-  module Pipeline
+  module Stream
+    include Enumerable
+
     def |(process)
-      Stream.new(self, process)
+      case process
+      when SliceStream
+        process.slice(self)
+      else
+        PipeStream.new(self, process)
+      end
     end
   end
 
-  # A stream is an Enumerable with a process processing the data comming
-  # from input stream and output as another stream
-  class Stream
-    include Enumerable
-    include Pipeline
+  class PipeStream
+    include Stream
 
     def initialize(upstream, process)
       @upstream, @process = upstream, process
@@ -25,8 +29,7 @@ module Evidence
   end
 
   class FileStream
-    include Enumerable
-    include Pipeline
+    include Stream
 
     def initialize(file)
       @file = file
@@ -42,8 +45,7 @@ module Evidence
   end
 
   class ArrayStream
-    include Enumerable
-    include Pipeline
+    include Stream
 
     def initialize(array)
       @array = array
@@ -64,9 +66,31 @@ module Evidence
     end
   end
 
+  class EnumStream
+    include Stream
+
+    def initialize(enum)
+      @enum = enum
+    end
+
+    def eos?
+      @enum.peek
+      false
+    rescue StopIteration
+      true
+    end
+
+    def each(&output)
+      @enum.each(&output)
+    end
+
+    def to_s
+      "$[#{@enum.inspect}]"
+    end
+  end
+
   class MergedStream
-    include Enumerable
-    include Pipeline
+    include Stream
 
     def initialize(streams, comparator)
       @comparator = comparator
@@ -103,9 +127,67 @@ module Evidence
     end
   end
 
+  class SlicedStreams
+    include Stream
+
+    def initialize(stream, index, start_index, end_index)
+      @stream, @index, @start_index, @end_index = stream, index, start_index, end_index
+      @slice_start_index, @slice_end_index = nil
+    end
+
+    def eos?
+      @stream.eos?
+    end
+
+    def each(&output)
+      return if eos?
+      @head ||= @stream.first
+      @slice_start_index ||= @start_index || @index[@head]
+      @slice_end_index ||= @end_index[@slice_start_index]
+      eos_in_slice = false
+      loop do
+        break if eos_in_slice
+
+        range = @slice_start_index..@slice_end_index
+        e = Enumerator.new do |y|
+          loop do
+            head_index = @index[@head]
+            if range.min > head_index
+              break if eos_in_slice = eos?
+              @head = @stream.first
+              next
+            end
+            break if range.max <= head_index
+
+            n = @head
+            if eos_in_slice = eos?
+              y << n
+              break
+            else
+              @head = @stream.first
+              y << n
+            end
+          end
+        end
+        @slice_start_index = range.max
+        @slice_end_index = @end_index[@slice_start_index]
+        output[range, EnumStream.new(e)]
+      end
+    end
+  end
+
+  class SliceStream
+    def initialize(index, start_index, end_index)
+      @index, @start_index, @end_index = index, start_index, end_index
+    end
+
+    def slice(stream)
+      SlicedStreams.new(stream, @index, @start_index, @end_index)
+    end
+  end
+
   class Counter
-    include Enumerable
-    include Pipeline
+    include Stream
 
     def initialize
       @count = 0

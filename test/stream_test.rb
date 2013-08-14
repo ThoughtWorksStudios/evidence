@@ -6,6 +6,17 @@ class StreamTest < Test::Unit::TestCase
     assert_equal [2, 4], s.to_a
   end
 
+  def test_stream_an_enumerator
+    e = Enumerator.new do |y|
+      c = 0
+      loop do
+        y << (c += 1)
+      end
+    end
+    s = Evidence.stream(e) | even_number_filter
+    assert_equal [2, 4], s.first(2)
+  end
+
   def test_counter_is_an_infinite_stream
     counter = Evidence.counter
     assert_equal [1, 2, 3, 4], counter.first(4)

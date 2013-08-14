@@ -12,6 +12,8 @@ module Evidence
       ArrayStream.new(obj)
     when File
       FileStream.new(obj)
+    when Enumerator
+      EnumStream.new(obj)
     else
       raise "Unknown how to convert #{obj.class} to a stream"
     end
@@ -28,21 +30,7 @@ module Evidence
 
   def slice_stream(index, step, start_index=nil)
     end_index = step.is_a?(Proc) ? step : lambda { |index| index + step }
-    lambda do |output|
-      @cache ||= []
-      start_index ||= @cache.first ? index[@cache.first] : nil
-      lambda do |log|
-        next_index = index[log]
-        start_index = index[log] if start_index.nil?
-        return if start_index > next_index
-        @cache << log
-        if end_index[start_index] <= next_index
-          range = start_index..end_index[start_index]
-          start_index = range.max
-          output.call(range, @cache.shift(@cache.size - 1))
-        end
-      end
-    end
+    SliceStream.new(index, start_index, end_index)
   end
 
   def counter
@@ -80,6 +68,7 @@ module Evidence
   def littles_law_analysis
     lambda do |output|
       lambda do |range, logs|
+        logs = logs.to_a
         count = logs.size
         avg_response_time = logs.reduce(0) {|memo, log| memo + log[:response][:completed_time].to_i} / count
 
