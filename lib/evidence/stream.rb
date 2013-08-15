@@ -184,10 +184,9 @@ module Evidence
     lambda { |output| lambda { |i| output[block[i]] } }
   end
 
-  def stream_filter(&block)
+  def stream_select(&block)
     lambda { |output| lambda { |i| output[i] if block[i] } }
   end
-  alias :stream_select :stream_filter
 
   def counter
     count = 0

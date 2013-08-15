@@ -130,10 +130,7 @@ class StreamTest < Test::Unit::TestCase
     assert_equal [2, 3], stream.to_a
   end
 
-  def test_stream_filter_and_select_should_output_filtered_element
-    stream = stream([{k: 1}, {k: 2}]) | stream_filter {|e| e[:k] == 1}
-    assert_equal [{k: 1}], stream.to_a
-
+  def test_stream_select_should_output_filtered_element
     stream = stream([{k: 1}, {k: 2}]) | stream_select {|e| e[:k] == 2}
     assert_equal [{k: 2}], stream.to_a
   end
