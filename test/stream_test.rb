@@ -139,7 +139,7 @@ class StreamTest < Test::Unit::TestCase
   end
 
   def test_chain_slice_stream_with_stream_map
-    stream = stream([1, 2, 3, 4]) | slice_stream(lambda{|n| n}, 2) | stream_map {|ns| ns[:stream].reduce(:+)}
+    stream = stream([1, 2, 3, 4]) | slice_stream(2) {|s| s[:stream].to_a} | stream_map {|ns| ns.reduce(:+)}
     assert_equal [3, 7], stream.to_a
   end
 

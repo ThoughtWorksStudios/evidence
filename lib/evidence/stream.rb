@@ -95,9 +95,10 @@ module Evidence
   class SlicedStreams
     include Stream
 
-    def initialize(stream, index, start_index, end_index)
+    def initialize(stream, index, start_index, end_index, &block)
       @stream, @index, @start_index, @end_index = stream, index, start_index, end_index
       @slice_start_index, @slice_end_index = nil
+      @block = block
     end
 
     def eos?
@@ -134,18 +135,19 @@ module Evidence
           end
         end
         @slice_start_index, @slice_end_index = range.max, @end_index[range.max]
-        output[range: range, stream: EnumStream.new(slice_enum)]
+        output[@block[range: range, stream: EnumStream.new(slice_enum)]]
       end
     end
   end
 
   class SliceStream
-    def initialize(index, start_index, end_index)
+    def initialize(index, start_index, end_index, &block)
       @index, @start_index, @end_index = index, start_index, end_index
+      @block = block
     end
 
     def slice(stream)
-      SlicedStreams.new(stream, @index, @start_index, @end_index)
+      SlicedStreams.new(stream, @index, @start_index, @end_index, &@block)
     end
   end
 
@@ -163,9 +165,10 @@ module Evidence
     end
   end
 
-  def slice_stream(index, step, start_index=nil)
+  def slice_stream(step, index=lambda {|i| i}, start_index=nil, &block)
+    raise "Must give a block to process each slice" unless block_given?
     end_index = step.is_a?(Proc) ? step : lambda { |index| index + step }
-    SliceStream.new(index, start_index, end_index)
+    SliceStream.new(index, start_index, end_index, &block)
   end
 
   def stream_each(&block)
