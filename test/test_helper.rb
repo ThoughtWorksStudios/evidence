@@ -14,7 +14,7 @@ def data_logs_parser
   pattern = /^
     \w{3}\s+\d+\s+\d{2}\:\d{2}\:\d{2}\s+
     (?<host_name>[^\s]+)\s+
-    [\w-_]+\:\s+
+    [-_\w]+\:\s+
     INFO\s+
     \[(?<timestamp>[^\]]+)\]\s+
     \[(?<thread_label>[^\]]+)\]\s+

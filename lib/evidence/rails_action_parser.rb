@@ -1,26 +1,24 @@
 module Evidence
   class RailsActionParser
 
-    def initialize(pid, message, unmatched)
+    def initialize(pid, message)
       @pid, @message = pid, message
-      @unmatched = unmatched
+      @processes = Hash.new
     end
 
-    def [](output)
-      processes = Hash.new
+    def to_proc
       lambda do |log|
         pid = @pid[log]
-        if processes.has_key?(pid)
-          processes[pid] << log
+        if @processes.has_key?(pid)
+          @processes[pid] << log
           if end_action?(@message[log])
-            output.call(parse_action_logs(processes.delete(pid)))
+            parse_action_logs(@processes.delete(pid))
           end
         else
           if start_action?(@message[log])
-            processes[pid] = [log]
-          else
-            @unmatched.call(log)
+            @processes[pid] = [log]
           end
+          nil
         end
       end
     end
