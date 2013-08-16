@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'evidence'
-  s.version = '0.0.4'
+  s.version = '0.0.5'
   s.summary = 'Log Analysis Tool'
   s.license = 'MIT'
   s.authors = ["Xiao Li", 'Sheroy Marker']
@@ -8,6 +8,7 @@ Gem::Specification.new do |s|
   s.homepage = 'https://github.com/ThoughtWorksStudios/evidence'
 
   s.add_development_dependency('rake')
+  s.required_ruby_version = '>= 2.0.0'
 
   s.files = ['README.md']
   s.files += Dir['lib/**/*.rb']
