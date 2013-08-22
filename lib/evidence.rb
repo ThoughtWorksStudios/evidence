@@ -1,5 +1,6 @@
 require 'evidence/lazy'
-require 'evidence/rails_action_parser'
+require 'evidence/rails'
+require 'evidence/action_parser'
 
 Enumerator::Lazy.send(:include, Evidence::Lazy)
 
@@ -17,12 +18,16 @@ module Evidence
     end
   end
 
+  # default to rails 2
+  def rails_action_parser(pid, message, version=2)
+    rails2_action_parser(pid, message)
+  end
   # Parse out rails actions by given:
   #   pid: a lambda returns process id used to group logs
   #   message: a lambda returns rails log string message
   # example: logs.map(&rails_action_parser(pid, message)).compact
-  def rails_action_parser(pid, message)
-    RailsActionParser.new(pid, message)
+  def rails2_action_parser(pid, message)
+    ActionParser.new(pid, message, rails2_action_patterns)
   end
 
   # Rails action request timestamp parser

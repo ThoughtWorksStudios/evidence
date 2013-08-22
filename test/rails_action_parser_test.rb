@@ -5,15 +5,15 @@ class RailsActionParserTest < Test::Unit::TestCase
 
   def test_start_action_pattern
     log = 'Processing MyController#list (for 67.214.225.82 at 2013-08-06 15:00:42) [GET]'
-    assert log =~ parser.start_action_pattern
+    assert log =~ rails2_action_patterns[:start]
 
     log = '#012#012Processing MyController#list (for 67.214.225.82 at 2013-08-06 15:00:42) [GET]'
-    assert log =~ parser.start_action_pattern
+    assert log =~ rails2_action_patterns[:start]
   end
 
   def test_end_action_pattern
     log = 'Completed in 755ms (View: 330, DB: 215) | 200 OK [https://abc.god.company.com/projects/abc/cards/list]'
-    assert log =~ parser.end_action_pattern
+    assert log =~ rails2_action_patterns[:end]
   end
 
   def test_merge_logs_into_actions
@@ -21,7 +21,7 @@ class RailsActionParserTest < Test::Unit::TestCase
             {pid: '1', message: 'Processing MyController#list (for 67.214.225.82 at 2013-08-06 15:00:42) [GET]'},
             {pid: '1', message: 'Completed in 755ms (View: 330, DB: 215) | 200 OK [https://abc.god.company.com/projects/abc/cards/list]'}
            ]
-    actions = data.map(&parser).compact.to_a
+    actions = data.map(&rails2_parser).compact.to_a
 
     assert_equal 1, actions.size
     assert_equal({
@@ -48,7 +48,7 @@ class RailsActionParserTest < Test::Unit::TestCase
               {pid: '1', message: 'Completed in 701ms (View: 31, DB: 21) | 200 OK [https://abc.god.company.com/projects/abc/cards/list]'},
               {pid: '2', message: 'Completed in 702ms (View: 32, DB: 22) | 200 OK [https://abc.god.company.com/projects/abc/cards/list]'}
            ]
-    actions = data.map(&parser).compact.to_a
+    actions = data.map(&rails2_parser).compact.to_a
     assert_equal 2, actions.size
     assert_equal({
                    remote_addr: '67.214.225.01',
@@ -83,7 +83,16 @@ class RailsActionParserTest < Test::Unit::TestCase
     }, actions[1][:response])
   end
 
-  def parser(pid=lambda {|log| log[:pid]}, message=lambda {|log| log[:message]})
-    rails_action_parser(pid, message)
+  def test_process_action_that_has_no_view_time
+    logs = ["#012#012Processing LandingController#index (for 14.140.219.2 at 2013-07-13 00:11:15) [GET]",
+            "Redirected to https://x.company.com/abc",
+            "Completed in 2115ms (DB: 230) | 302 Found [https://x.company.com/]"]
+
+    actions = logs.map(&rails2_parser(lambda {|l| 'pid'}, lambda {|l| l})).compact.to_a
+    assert_equal 1, actions.size
+  end
+
+  def rails2_parser(pid=lambda {|log| log[:pid]}, message=lambda {|log| log[:message]})
+    rails2_action_parser(pid, message)
   end
 end
