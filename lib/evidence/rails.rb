@@ -17,7 +17,7 @@ module Evidence
           \((View\:\s(?<view_time>\d+))?
           \s*,?\s*
           (\s*DB\:\s(?<db_time>\d+))?
-          \)\s+\|\s+
+          \)?\s+\|\s+
           (?<code>\d+)\s+
           (?<status>\w+)\s+
           \[(?<url>.+)\]

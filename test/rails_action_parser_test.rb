@@ -88,10 +88,19 @@ class RailsActionParserTest < Test::Unit::TestCase
             "Redirected to https://x.company.com/abc",
             "Completed in 2115ms (DB: 230) | 302 Found [https://x.company.com/]"]
 
+    assert_parse_action_logs(logs)
+  end
+
+  def test_weird_rails_log
+    logs = ["#012#012Processing LandingController#index (for 14.140.219.2 at 2013-07-13 00:11:15) [GET]",
+            "Completed in 21ms (View: 7 | 200 OK [https://bearch.mingle.thoughtworks.com/gadgets/js/rpc.js?v=1.1-beta5]"]
+    assert_parse_action_logs(logs)
+  end
+
+  def assert_parse_action_logs(logs)
     actions = logs.map(&rails2_parser(lambda {|l| 'pid'}, lambda {|l| l})).compact.to_a
     assert_equal 1, actions.size
   end
-
   def rails2_parser(pid=lambda {|log| log[:pid]}, message=lambda {|log| log[:message]})
     rails2_action_parser(pid, message)
   end
