@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'evidence'
-  s.version = '0.0.5'
+  s.version = '0.0.6'
   s.summary = 'Log Analysis Tool'
   s.license = 'MIT'
   s.authors = ["Xiao Li", 'Sheroy Marker']
