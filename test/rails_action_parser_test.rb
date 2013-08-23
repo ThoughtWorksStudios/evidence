@@ -29,7 +29,8 @@ class RailsActionParserTest < Test::Unit::TestCase
                    timestamp: '2013-08-06 15:00:42',
                    controller: 'MyController',
                    action: 'list',
-                   method: 'GET'
+                   method: 'GET',
+                   format: nil
                  }, actions[0][:request])
     assert_equal({
                    completed_time: '755',
@@ -37,7 +38,7 @@ class RailsActionParserTest < Test::Unit::TestCase
                    db_time: '215',
                    code: '200',
                    status: 'OK',
-                   url: "https://abc.god.company.com/projects/abc/cards/list"
+                   url: "[https://abc.god.company.com/projects/abc/cards/list]"
                  }, actions[0][:response])
   end
 
@@ -55,6 +56,7 @@ class RailsActionParserTest < Test::Unit::TestCase
                    timestamp: '2013-08-06 15:00:42',
                    controller: 'MyController',
                    action: 'list',
+                   format: nil,
                    method: 'GET'
                  }, actions[0][:request])
     assert_equal({
@@ -63,7 +65,7 @@ class RailsActionParserTest < Test::Unit::TestCase
                    db_time: '21',
                    code: '200',
                    status: 'OK',
-                   url: "https://abc.god.company.com/projects/abc/cards/list"
+                   url: "[https://abc.god.company.com/projects/abc/cards/list]"
                  }, actions[0][:response])
 
     assert_equal({
@@ -71,6 +73,7 @@ class RailsActionParserTest < Test::Unit::TestCase
                    timestamp: '2013-08-06 15:00:42',
                    controller: 'MyController',
                    action: 'list',
+                   format: nil,
                    method: 'GET'
                  }, actions[1][:request])
     assert_equal({
@@ -79,7 +82,7 @@ class RailsActionParserTest < Test::Unit::TestCase
                    db_time: '22',
                    code: '200',
                    status: 'OK',
-                   url: "https://abc.god.company.com/projects/abc/cards/list"
+                   url: "[https://abc.god.company.com/projects/abc/cards/list]"
     }, actions[1][:response])
   end
 
@@ -91,7 +94,7 @@ class RailsActionParserTest < Test::Unit::TestCase
     assert_parse_action_logs(logs)
   end
 
-  def test_weird_rails_log
+  def test_process_no_db_time_response_log
     logs = ["#012#012Processing LandingController#index (for 14.140.219.2 at 2013-07-13 00:11:15) [GET]",
             "Completed in 21ms (View: 7 | 200 OK [https://x.company.com/gadgets/js/rpc.js?v=1.1-beta5]"]
     assert_parse_action_logs(logs)
@@ -99,7 +102,15 @@ class RailsActionParserTest < Test::Unit::TestCase
 
   def test_process_multiple_words_status_response
     logs = ["#012#012Processing LandingController#index (for 14.140.219.2 at 2013-07-13 00:11:15) [GET]",
-            "Completed in 21ms (View: 7 | 304 Not Modified [https://x.company.com/gadgets/js/rpc.js?v=1.1-beta5]"]
+            "Completed in 21ms (View: 7 | 414 Request-URI Too Long [https://x.company.com/gadgets/js/rpc.js?v=1.1-beta5]"]
+    actions = parse(logs)
+    assert_equal 1, actions.size
+    assert_equal 'Request-URI Too Long', actions[0][:response][:status]
+  end
+
+  def test_process_no_view_and_db_time_log
+    logs = ["#012#012Processing LandingController#index (for 14.140.219.2 at 2013-07-13 00:11:15) [GET]",
+            "Completed in 21ms | 304 Not Modified [https://x.company.com/gadgets/js/rpc.js?v=1.1-beta5]"]
     assert_parse_action_logs(logs)
   end
 
@@ -108,14 +119,29 @@ class RailsActionParserTest < Test::Unit::TestCase
             "#012#012Processing HelloController#index (for 14.140.219.2 at 2013-07-13 00:11:15) [GET]",
             "Completed in 21ms (View: 7 | 304 Not Modified [https://x.company.com/gadgets/js/rpc.js?v=1.1-beta5]"]
 
-    actions = logs.map(&rails2_parser(lambda {|l| 'pid'}, lambda {|l| l})).compact.to_a
+    actions = parse(logs)
     assert_equal 1, actions.size
     assert_equal 'HelloController', actions[0][:request][:controller]
   end
 
-  def assert_parse_action_logs(logs)
-    actions = logs.map(&rails2_parser(lambda {|l| 'pid'}, lambda {|l| l})).compact.to_a
+  def test_process_log_has_format_info
+    logs = ["#012#012Processing LandingController#index to atom (for 14.140.219.2 at 2013-07-13 00:11:15) [GET]",
+            "Completed in 21ms (View: 7 | 414 Request-URI Too Long [https://x.company.com/gadgets/js/rpc.js?v=1.1-beta5]"]
+    actions = parse(logs)
     assert_equal 1, actions.size
+    assert_equal 'atom', actions[0][:request][:format]
+    assert_equal '14.140.219.2', actions[0][:request][:remote_addr]
+    assert_equal '2013-07-13 00:11:15', actions[0][:request][:timestamp]
+  end
+
+  def assert_parse_action_logs(logs)
+    actions = parse(logs)
+    assert_equal 1, actions.size
+    assert actions.first[:response][:url]
+  end
+
+  def parse(logs)
+    logs.map(&rails2_parser(lambda {|l| 'pid'}, lambda {|l| l})).compact.to_a
   end
 
   def rails2_parser(pid=lambda {|log| log[:pid]}, message=lambda {|log| log[:message]})

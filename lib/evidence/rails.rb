@@ -5,6 +5,7 @@ module Evidence
           (\#012\#012)?             # ignore encoded newlines
           Processing\s+
           (?<controller>\w+)\#(?<action>\w+)\s+
+          (to\s+(?<format>\w+)\s+)?
           \(for\s+
           (?<remote_addr>[^\s]+)\s+
           at\s+
@@ -14,13 +15,16 @@ module Evidence
       end: /^
           Completed\sin\s
           (?<completed_time>\d+)ms\s+
-          \((View\:\s(?<view_time>\d+))?
-          \s*,?\s*
-          (\s*DB\:\s(?<db_time>\d+))?
-          \)?\s+\|\s+
+          (
+            \(
+                (View\:\s(?<view_time>\d+))?
+                \s*,?\s*
+                (DB\:\s(?<db_time>\d+))?
+            \)?
+          )?\s*\|\s*
           (?<code>\d+)\s+
-          (?<status>[ \w]+)\s+
-          \[(?<url>.+)\]
+          (?<status>[ \w-]+)\s+
+          (?<url>.+)
         $/x
     }
   end
