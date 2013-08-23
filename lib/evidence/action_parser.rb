@@ -10,13 +10,21 @@ module Evidence
     def to_proc
       lambda do |log|
         pid = @pid[log]
+        msg = @message[log]
         if @processes.has_key?(pid)
-          @processes[pid] << log
-          if end_action?(@message[log])
-            parse_action_logs(@processes.delete(pid))
+          if start_action?(msg)
+            warn "[WARN] Found start action following another start action: #{msg}"
+            warn "[WARN] Ignore logs: #{@processes.delete(pid).inspect}"
+            @processes[pid] = [log]
+            nil
+          else
+            @processes[pid] << log
+            if end_action?(msg)
+              parse_action_logs(@processes.delete(pid))
+            end
           end
         else
-          if start_action?(@message[log])
+          if start_action?(msg)
             @processes[pid] = [log]
           end
           nil

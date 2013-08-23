@@ -93,14 +93,31 @@ class RailsActionParserTest < Test::Unit::TestCase
 
   def test_weird_rails_log
     logs = ["#012#012Processing LandingController#index (for 14.140.219.2 at 2013-07-13 00:11:15) [GET]",
-            "Completed in 21ms (View: 7 | 200 OK [https://bearch.mingle.thoughtworks.com/gadgets/js/rpc.js?v=1.1-beta5]"]
+            "Completed in 21ms (View: 7 | 200 OK [https://x.company.com/gadgets/js/rpc.js?v=1.1-beta5]"]
     assert_parse_action_logs(logs)
+  end
+
+  def test_process_multiple_words_status_response
+    logs = ["#012#012Processing LandingController#index (for 14.140.219.2 at 2013-07-13 00:11:15) [GET]",
+            "Completed in 21ms (View: 7 | 304 Not Modified [https://x.company.com/gadgets/js/rpc.js?v=1.1-beta5]"]
+    assert_parse_action_logs(logs)
+  end
+
+  def test_ignore_previous_start_action_when_found_another_start_action_after_a_start_action
+    logs = ["#012#012Processing LandingController#index (for 14.140.219.2 at 2013-07-13 00:11:15) [GET]",
+            "#012#012Processing HelloController#index (for 14.140.219.2 at 2013-07-13 00:11:15) [GET]",
+            "Completed in 21ms (View: 7 | 304 Not Modified [https://x.company.com/gadgets/js/rpc.js?v=1.1-beta5]"]
+
+    actions = logs.map(&rails2_parser(lambda {|l| 'pid'}, lambda {|l| l})).compact.to_a
+    assert_equal 1, actions.size
+    assert_equal 'HelloController', actions[0][:request][:controller]
   end
 
   def assert_parse_action_logs(logs)
     actions = logs.map(&rails2_parser(lambda {|l| 'pid'}, lambda {|l| l})).compact.to_a
     assert_equal 1, actions.size
   end
+
   def rails2_parser(pid=lambda {|log| log[:pid]}, message=lambda {|log| log[:message]})
     rails2_action_parser(pid, message)
   end

@@ -19,7 +19,7 @@ module Evidence
           (\s*DB\:\s(?<db_time>\d+))?
           \)?\s+\|\s+
           (?<code>\d+)\s+
-          (?<status>\w+)\s+
+          (?<status>[ \w]+)\s+
           \[(?<url>.+)\]
         $/x
     }
