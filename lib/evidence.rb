@@ -13,7 +13,9 @@ module Evidence
   def parse_log(pattern)
     lambda do |log|
       if m = pattern.match(log)
-        Hash[m.names.map(&:to_sym).zip(m.captures)]
+        Hash[m.names.map(&:to_sym).zip(m.captures)].tap do |h|
+          h[:origin] = log unless h.has_key?(:origin)
+        end
       end
     end
   end
@@ -39,7 +41,7 @@ module Evidence
     end
   end
 
-  # actions.chunk(&time_window(60))
+  # actions.chunk(&by_time_window(60))
   def by_time_window(time_window, start=nil)
     range = nil
     lambda do |ele|

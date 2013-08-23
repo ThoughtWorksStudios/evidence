@@ -30,4 +30,16 @@ class LogParserTest < Test::Unit::TestCase
     assert log
     assert_equal 'INFO [2013-08-06 15:01:14,304] [btpool0-17] [com.company.helloworld] [tenant:timeout]   Parameters: {"controller"=>"programs", "action"=>"index"}', log[:message]
   end
+
+  def test_should_carry_on_origin_log_data
+    logs = raw_logs.map(&parse_log(pattern)).compact.to_a
+    log = logs.shift
+    assert_equal raw_logs.first, log[:origin]
+  end
+
+  def test_should_overwrite_origin_log_if_parse_log_pattern_uses_origin_as_a_key
+    logs = raw_logs.map(&parse_log(/(?<origin>\w+).*/)).compact.to_a
+    log = logs.shift
+    assert_equal 'Aug', log[:origin]
+  end
 end
