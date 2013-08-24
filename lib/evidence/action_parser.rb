@@ -26,6 +26,8 @@ module Evidence
         else
           if start_action?(msg)
             @processes[pid] = [log]
+          else
+            warn "[WARN] Ignore a log that is not start action and also not after a start action: #{log.inspect}"
           end
           nil
         end
